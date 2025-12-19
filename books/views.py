@@ -1,59 +1,66 @@
-from django.shortcuts import render, get_object_or_404, redirect
+from django.views.generic import TemplateView, ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.shortcuts import redirect
+from django.urls import reverse_lazy
 from django.http import HttpResponse
 from .models import Book
 from .forms import BookForm, ReviewForm
 import datetime
 
-def home(request):
-    return render(request, 'books/home.html')
+class HomeView(TemplateView):
+    template_name = 'books/home.html'
 
-def book_list(request):
-    books = Book.objects.all()
-    return render(request, 'books/book_list.html', {"books": books})
+class BookListView(ListView):
+    model = Book
+    template_name = 'books/book_list.html'
+    context_object_name = 'books'
 
-def book_detail(request, id):
-    book = get_object_or_404(Book, id=id)
-    reviews = book.reviews.order_by("-created_at")
-    if request.method == "POST":
+class BookDetailView(DetailView):
+    model = Book
+    template_name = 'books/book_detail.html'
+    pk_url_kwarg = 'id'
+    context_object_name = 'book'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['reviews'] = self.object.reviews.order_by('-created_at')
+        context['form'] = ReviewForm()
+        return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
         form = ReviewForm(request.POST)
         if form.is_valid():
             review = form.save(commit=False)
-            review.book = book
+            review.book = self.object
             review.full_clean()
             review.save()
-            return redirect("book_detail", id=book.id)
-    else:
-        form = ReviewForm()
-    return render(request, "books/book_detail.html", {"book": book, "reviews": reviews, "form": form})
+            return redirect('book_detail', id=self.object.id)
+        context = self.get_context_data()
+        context['form'] = form
+        return self.render_to_response(context)
 
-def book_create(request):
-    if request.method == "POST":
-        form = BookForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect("book_list")
-    else:
-        form = BookForm()
-    return render(request, "books/book_form.html", {"form": form})
+class BookCreateView(CreateView):
+    model = Book
+    form_class = BookForm
+    template_name = 'books/book_form.html'
+    success_url = reverse_lazy('book_list')
 
-def book_update(request, id):
-    book = get_object_or_404(Book, id=id)
-    if request.method == "POST":
-        form = BookForm(request.POST, instance=book)
-        if form.is_valid():
-            form.save()
-            return redirect("book_detail", id=book.id)
-    else:
-        form = BookForm(instance=book)
-    return render(request, "books/book_form.html", {"form": form})
+class BookUpdateView(UpdateView):
+    model = Book
+    form_class = BookForm
+    template_name = 'books/book_form.html'
+    pk_url_kwarg = 'id'
 
-def book_delete(request, id):
-    book = get_object_or_404(Book, id=id)
-    if request.method == "POST":
-        book.delete()
-        return redirect("book_list")
-    return render(request, "books/book_delete.html", {"book": book})
+    def get_success_url(self):
+        return reverse_lazy('book_detail', kwargs={'id': self.object.id})
 
-def current_time(request):
-    now = datetime.datetime.now()
-    return HttpResponse(f"<h1>Текущее время: {now.strftime('%Y-%m-%d %H:%M:%S')}</h1>")
+class BookDeleteView(DeleteView):
+    model = Book
+    template_name = 'books/book_delete.html'
+    pk_url_kwarg = 'id'
+    success_url = reverse_lazy('book_list')
+
+class CurrentTimeView(TemplateView):
+    def get(self, request, *args, **kwargs):
+        now = datetime.datetime.now()
+        return HttpResponse(f"<h1>Текущее время: {now.strftime('%Y-%m-%d %H:%M:%S')}</h1>")
