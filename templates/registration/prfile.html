@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Профиль</h2>
+<p>Привет, {{ user.username }}!</p>
+<p>Email: {{ user.email }}</p>
+<a href="{% url 'users_list' %}">Список всех пользователей</a>
+{% endblock %}

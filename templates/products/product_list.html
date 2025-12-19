@@ -1,0 +1,17 @@
+{% load static %}
+<h1>Все продукты</h1>
+<a href="{% url 'product_add' %}">Добавить продукт</a>
+<form method="get" action="{% url 'search_products' %}">
+    <input type="text" name="q" placeholder="Поиск">
+    <button type="submit">Поиск</button>
+</form>
+<ul>
+{% for product in products %}
+    <li>{{ product.name }} - {{ product.get_category_display }} - {{ product.price }} сом
+        <a href="{% url 'product_edit' product.pk %}">Редактировать</a>
+        <a href="{% url 'product_delete' product.pk %}">Удалить</a>
+    </li>
+{% empty %}
+    <li>Продуктов нет</li>
+{% endfor %}
+</ul>

@@ -1,0 +1,9 @@
+<h1>Результаты поиска: "{{ query }}"</h1>
+<a href="{% url 'product_list' %}">Все продукты</a>
+<ul>
+{% for product in products %}
+    <li>{{ product.name }} - {{ product.get_category_display }} - {{ product.price }} сом</li>
+{% empty %}
+    <li>Ничего не найдено</li>
+{% endfor %}
+</ul>

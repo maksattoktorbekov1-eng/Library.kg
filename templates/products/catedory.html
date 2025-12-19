@@ -1,0 +1,10 @@
+{% load static %}
+<h1>{{ category_name }}</h1>
+<a href="{% url 'product_list' %}">Все продукты</a>
+<ul>
+{% for product in products %}
+    <li>{{ product.name }} - {{ product.price }} сом</li>
+{% empty %}
+    <li>Продуктов нет</li>
+{% endfor %}
+</ul>

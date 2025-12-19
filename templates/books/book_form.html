@@ -1,0 +1,22 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>{% if form.instance.pk %}Редактировать{% else %}Создать{% endif %} книгу</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+<header>
+    <h1>{% if form.instance.pk %}Редактировать{% else %}Создать{% endif %} книгу</h1>
+</header>
+<main>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">{% if form.instance.pk %}Сохранить{% else %}Создать{% endif %}</button>
+    </form>
+    <a href="{% url 'book_list' %}">Назад к списку книг</a>
+</main>
+</body>
+</html>
